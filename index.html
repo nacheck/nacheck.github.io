@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapa amb Leaflet - Contenidor</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        #map {
+            height: 90vh;
+        }
+        #controls {
+            padding: 10px;
+            background: white;
+            box-shadow: 0px 0px 5px rgba(0,0,0,0.3);
+        }
+    </style>
+</head>
+<body>
+    <div id="controls">
+        <label><b>Propostes de canvi d'ubicació de contenidors:</b> </label>
+        <label><input type="radio" name="location" value="current" checked> Situació actual</label>
+        <label><input type="radio" name="location" value="proposal1"> Proposta 1</label>
+        <label><input type="radio" name="location" value="proposal2"> Proposta 2</label>
+    </div>
+    <div id="map"></div>
+   
+
+    <script>
+        // Coordenades inicials
+        const initialCoords = [41.219186523487004, 1.7227440915896788];
+
+        // Crear el mapa centrat en les coordenades inicials
+        const map = L.map('map').setView(initialCoords, 18);
+
+        // Afegir el mapa base d'OpenStreetMap
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Crear una icona personalitzada
+        const iconDimension = 24;
+        const trashIcon = L.icon({
+            iconUrl: 'https://cdn.icon-icons.com/icons2/3123/PNG/512/trash_bin_recycle_bin_waste_dumpster_icon_191940.png', // URL de la imatge de la icona
+            iconSize: [iconDimension, iconDimension], // Tamany de la icona (ample x alt)
+            iconAnchor: [iconDimension/2, iconDimension/2], // Punt d'ancoratge (centre inferior)
+            popupAnchor: [0, -iconDimension] // Posició del popup respecte a l'ancoratge
+        });
+
+        
+        // Funció per afegir un cercle translúcid
+        function addCircle(lat, lon, color = 'blue',radius = 100, opacity = 0.2) {
+            let circle = L.circle([lat, lon], {
+                color: color,
+                fillColor: color,
+                fillOpacity: opacity,
+                radius: radius
+            });
+            circle.addTo(map);
+            return circle;
+        }
+
+        // Afegir un marcador amb la icona personalitzada
+        /*L.marker([41.219186523487004, 1.7227440915896788], { icon: trashIcon })
+            .bindPopup('Contenidor de brossa principal')
+            .addTo(map);
+            addCircle(initialCoords[0], initialCoords[1]);
+        */
+
+        // Afegir un cercle a les coordenades inicials
+       
+
+        // Exemple: afegir més punts amb icona i cercles
+        const coordsContenidors =[
+            [41.21792557186131, 1.720046042536051],
+            [41.217720422528416, 1.7226802591845372],
+            [41.21805790561163, 1.7235852465940253],
+            [41.21848209452846, 1.7242373990108204],
+            [41.219323413324254, 1.723772706307379],
+            [41.219643192332256, 1.722184838577897],
+            [41.21836080679414, 1.7184538395257543],
+            [41.21958129501111, 1.7203527069861082],
+            [41.21958448790257, 1.7203501679201578],
+            [41.21959441560049, 1.7247846659802588],
+            [41.21965328418916, 1.7190340858938413],
+            [41.22069833662519, 1.722872340802176],
+            //[41.21897538890899, 1.7229182554837725, 'orange', 'situacio actual']
+            //[41.21938503288016, 1.7226262944939927, 'yellow','proposta 1']
+            //[41.21868449381739, 1.7214756641728923, 'red', 'proposta 1'] /* costat espiga d'or */
+        ] 
+        coordsContenidors.forEach(coord => {
+            L.marker([coord[0], coord[1]], { icon: trashIcon })
+                .addTo(map);
+            addCircle(coord[0], coord[1], coord[2]);
+        });
+
+        const proposals = [
+            { coords: [41.21938503288016, 1.7226262944939927], text: "proposal1" ,color:'orange'},
+            { coords: [41.21868449381739, 1.7214756641728923], text: "proposal2" ,color:'yellow'},
+            { coords: [41.21897538890899, 1.7229182554837725], text: "current" , color:'red'},
+        ];
+
+        // Marcador dinàmic per a les propostes
+        let proposalMarker;
+        let circleMarker;
+
+        // Funció per actualitzar el marcador segons l'opció seleccionada
+        function updateMarker(value) {
+            if (proposalMarker) {
+                map.removeLayer(proposalMarker); // Elimina el marcador actual
+                map.removeLayer(circleMarker);
+            }
+            const selectedProposal = proposals.find(p => p.text.toLowerCase().includes(value));
+            if (selectedProposal) {
+                proposalMarker = L.marker(selectedProposal.coords, { icon: trashIcon })
+                    .bindPopup(selectedProposal.text)
+                    .addTo(map);
+                    circleMarker= addCircle(selectedProposal.coords[0], selectedProposal.coords[1], selectedProposal.color);
+            }
+        }
+         // Afegir escoltador d'esdeveniments als radio buttons
+         document.querySelectorAll('input[name="location"]').forEach(radio => {
+            radio.addEventListener('change', (event) => {
+                updateMarker(event.target.value);                
+            });
+        });
+
+        // Inicialitzar amb la situació actual
+        updateMarker('current');
+    </script>
+</body>
+</html>
